@@ -7,10 +7,23 @@ const login = async (req, res) => {
   if (!username || !password) {
     throw new CustomAPIError("please provide username and password", 404);
   }
-  res.send("The login is valid");
+
+  const id = new Date().getDate();
+
+  const token = jwt.sign({ id, username }, process.env.JWT_SECRET, {
+    expiresIn: "30d",
+  });
+
+  res.status(200).json({ msg: "user created", token });
 };
 
 const dashboard = async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer")) {
+    throw new CustomAPIError("No token present", 401);
+  }
+  const token = authHeader.split(" ")[1];
+  console.log(token);
   const luckyNumber = Math.floor(Math.random() * 100);
   res.status(200).json({
     msg: `Hello, John Doe`,
